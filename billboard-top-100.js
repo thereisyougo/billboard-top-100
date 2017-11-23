@@ -5,7 +5,7 @@ const baseUrl = "http://www.billboard.com/charts/";
 
 // list all data from requested chart
 
-var getChart = function(chart, date, cb){
+var getChart = function(chart, date = '', cb){
 	var result;
 	if (typeof date === 'function'){
 		cb = date;
@@ -24,11 +24,9 @@ var getChart = function(chart, date, cb){
 
 			var $ = cheerio.load(html);
 
-			$('.chart-data article').each(function(index, item){
-				var songName = $('.chart-row__song', this).text().replace(/\r?\n|\r/g, "").replace(/\s+/g, ' ');
-				while(songName[0] === ' ')
-    				songName = songName.substr(1);
-				titles.push(songName);
+			$('.chart-data .chart-row').each(function(index, item){
+				var songName = $('.chart-row__song', this).text().replace(/\s+/g, ' ');
+				titles.push(songName.trim());
 
 				$(item).find('.chart-row__secondary > div').each(function(_, item) {
 					var positionInfo = {};
@@ -39,17 +37,12 @@ var getChart = function(chart, date, cb){
 				});
 				
 				$('.chart-row__current-week', item).each(function(index){
-					ranks.push($(this).text().replace(/\r?\n|\r/g, "").replace(/\s+/g, ' '));
+					ranks.push($(this).text().trim().replace(/\s+/g, ' '));
 				});
 
 				$('.chart-row__artist', item).each(function(index){
-					var artistName = $(this).text().replace(/\r?\n|\r/g, "").replace(/\s+/g, ' ');
-					while(artistName[0] === ' ')
-	    				artistName = artistName.substr(1);
-	    			if (artistName[artistName.length - 1] == ' '){
-	    				artistName = artistName.substring(0, artistName.length - 1);
-	    			}
-					artists.push(artistName);
+					var artistName = $(this).text().replace(/\s+/g, ' ');
+					artists.push(artistName.trim());
 				});
 				
 				$('.chart-row__image', item).each(function(index){
@@ -126,5 +119,8 @@ var listCharts = function(cb) {
 
 module.exports = {
 	getChart,
-	listCharts
+	listCharts,
+	get val() {
+		getChart('hot-100', data => console.info(data))
+	}
 }
